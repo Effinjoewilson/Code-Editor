@@ -1,0 +1,13 @@
+.join-room {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.join-room input {
+    margin: 10px;
+    padding: 5px;
+}
+
+.join-room button {
+    padding: 10px;
+}
