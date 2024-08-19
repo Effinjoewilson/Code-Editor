@@ -1,13 +1,28 @@
 .join-room {
     text-align: center;
-    margin-top: 50px;
+    margin-top: 100px;
 }
 
 .join-room input {
-    margin: 10px;
-    padding: 5px;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
 }
 
 .join-room button {
-    padding: 10px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.join-room button:hover {
+    background-color: #0056b3;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
 }
