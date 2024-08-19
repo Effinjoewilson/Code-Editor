@@ -1,56 +1,38 @@
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const express = require('express');
-const path = require('path');
-require('dotenv').config();
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
-const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, '../client/public')));
-app.use(express.json());
-
-app.post('/api/create-room', (req, res) => {
-    const roomCode = generateRoomCode();
-    res.json({ roomCode });
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
 });
 
-app.post('/api/join-room', (req, res) => {
-    const { roomCode } = req.body;
-    if (validateRoomCode(roomCode)) {
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
-    }
-});
+app.use(cors());
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
+  console.log('User connected:', socket.id);
 
-    socket.on('joinRoom', (roomCode) => {
-        socket.join(roomCode);
-        console.log(`User joined room: ${roomCode}`);
-    });
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    console.log(`User with ID: ${socket.id} joined room: ${roomId}`);
+  });
 
-    socket.on('sendMessage', (message, roomCode) => {
-        io.to(roomCode).emit('receiveMessage', message);
-    });
+  socket.on('send_code', (data) => {
+    const { roomId, code } = data;
+    socket.to(roomId).emit('receive_code', code);
+  });
 
-    socket.on('disconnect', () => {
-        console.log('A user disconnected');
-    });
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+server.listen(5000, () => {
+  console.log('Server is running on port 5000');
 });
-
-function generateRoomCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-function validateRoomCode(code) {
-    return code.length === 6;
-}
