@@ -1,30 +1,45 @@
-import React, { useEffect } from 'react';
-import { io } from 'socket.io-client';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 import { useParams } from 'react-router-dom';
+import './Room.css';
+
+const socket = io.connect('http://localhost:5000');
 
 const Room = () => {
-    const { roomCode } = useParams();
+  const { roomId } = useParams();
+  const [code, setCode] = useState('');
 
-    useEffect(() => {
-        const socket = io();
+  useEffect(() => {
+    // Join the room on mount
+    socket.emit('join_room', roomId);
 
-        socket.emit('joinRoom', roomCode);
+    // Listen for code updates from other clients
+    socket.on('receive_code', (newCode) => {
+      setCode(newCode);
+    });
 
-        socket.on('connect', () => {
-            console.log('Connected to room:', roomCode);
-        });
+    return () => {
+      socket.disconnect();
+    };
+  }, [roomId]);
 
-        return () => {
-            socket.disconnect();
-        };
-    }, [roomCode]);
+  const handleCodeChange = (e) => {
+    const updatedCode = e.target.value;
+    setCode(updatedCode);
+    // Emit the code to the server
+    socket.emit('send_code', { roomId, code: updatedCode });
+  };
 
-    return (
-        <div className="room">
-            <h1>Room: {roomCode}</h1>
-            <p>Collaborate with others in real-time!</p>
-        </div>
-    );
+  return (
+    <div className="room-container">
+      <h2>Room: {roomId}</h2>
+      <textarea
+        value={code}
+        onChange={handleCodeChange}
+        className="code-editor"
+      />
+    </div>
+  );
 };
 
 export default Room;
